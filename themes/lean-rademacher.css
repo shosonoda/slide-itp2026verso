@@ -1,0 +1,69 @@
+/* @theme lean-rademacher */
+
+@import 'default';
+
+/*
+ * Font sizes
+ *
+ * These values match Marp Core's current "default" theme. Adjust them here
+ * when the slide typography needs to change.
+ */
+
+section {
+  font-size: 29px;
+}
+
+h1 {
+  font-size: 1.6em;
+}
+
+h2 {
+  font-size: 1.3em;
+}
+
+h3 {
+  font-size: 1.1em;
+}
+
+h4 {
+  font-size: 1.05em;
+}
+
+h5 {
+  font-size: 1em;
+}
+
+h6 {
+  font-size: 0.9em;
+}
+
+pre,
+:not(pre) > code {
+  font-size: 85%;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+  font-size: inherit;
+}
+
+small {
+  font-size: 90%;
+}
+
+header,
+footer {
+  font-size: 18px;
+}
+
+section::after {
+  font-size: 24px;
+}
+
+.footnotes {
+  font-size: 12px;
+}

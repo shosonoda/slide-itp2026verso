@@ -1,3 +1,11 @@
 # cache and other artifacts produced by Lean's Lake build tool
 .lake/
 _slides/
+
+# Marp exports generated at the repository root
+/*.html
+/*.pdf
+/*.pptx
+/*.png
+/*.jpg
+/*.jpeg

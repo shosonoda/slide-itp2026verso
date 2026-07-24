@@ -5,7 +5,7 @@ marp: true
 #       justify-content: start;
 #   }
 paginate: true
-theme: default
+theme: lean-rademacher
 size: 16:9
 math: katex
 ---

@@ -4,6 +4,21 @@ This template creates a [`reveal.js`](https://revealjs.com) slide presentation u
 [verso-slides](https://github.com/leanprover/verso-slides). It includes a title slide and a slide
 that demonstrates Lean code with an info panel.
 
+## Marp
+
+`marp.config.cjs` registers Lean 4 syntax highlighting. Run Marp CLI from the
+repository root so the configuration is loaded automatically:
+
+```bash
+marp src/draft.md -o draft.html
+```
+
+Lean code fences can stay as ```` ```lean ```` (or ```` ```lean4 ````).
+
+Font sizes are defined in `themes/lean-rademacher.css`. Its current values
+match Marp Core's built-in `default` theme. The theme is registered for Marp
+CLI by `marp.config.cjs` and for VS Code preview by `.vscode/settings.json`.
+
 ## Building
 
 To build the slides, run:
