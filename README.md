@@ -10,7 +10,14 @@ that demonstrates Lean code with an info panel.
 repository root so the configuration is loaded automatically:
 
 ```bash
-marp src/draft.md -o draft.html
+marp src/draft.md -o output/draft.html
+```
+
+To export the Marp slides as PDF:
+
+```bash
+mkdir -p output/pdf
+npx @marp-team/marp-cli --pdf src/draft.md -o output/pdf/draft.pdf
 ```
 
 Lean code fences can stay as ```` ```lean ```` (or ```` ```lean4 ````).

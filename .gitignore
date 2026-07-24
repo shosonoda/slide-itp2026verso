@@ -9,3 +9,6 @@ _slides/
 /*.png
 /*.jpg
 /*.jpeg
+
+# Rendered deliverables
+/output/
