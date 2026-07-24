@@ -1,5 +1,6 @@
 {
   "markdown.marp.themes": [
-    "./themes/lean-rademacher.css"
+    "./themes/lean-rademacher.css",
+    "./themes/lean-web.css"
   ]
 }

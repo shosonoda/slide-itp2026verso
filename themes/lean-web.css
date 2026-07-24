@@ -1,0 +1,169 @@
+/* @theme lean-web */
+
+@import 'default';
+
+/*
+ * Alternative color theme based on the light palette used by lean-lang.org.
+ * Layout and font sizes intentionally match lean-rademacher.css so that the
+ * two themes can be compared by changing only the Marp theme name.
+ */
+
+:root {
+  --lean-primary: #386ee0;
+  --lean-primary-focus: #1d4ed8;
+  --lean-primary-light: #4a90e2;
+  --lean-text: #333;
+  --lean-text-light: #64748b;
+  --lean-muted: #607d8b;
+  --lean-background: #f9fbfd;
+  --lean-surface: #fff;
+  --lean-border: #e4ebf3;
+  --lean-border-strong: #d1d9e2;
+  --lean-hover: rgba(56, 110, 224, 0.08);
+}
+
+section {
+  background: var(--lean-background);
+  color: var(--lean-text);
+  font-size: 29px;
+  justify-content: flex-start;
+  padding-top: 30px;
+}
+
+section.title {
+  background:
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(67, 126, 247, 0.18) 0%,
+      rgba(249, 251, 253, 0) 42%
+    ),
+    var(--lean-background);
+  justify-content: center;
+  padding-top: 70px;
+}
+
+h1 {
+  color: var(--lean-primary);
+  font-size: 1.6em;
+}
+
+h2 {
+  color: var(--lean-primary);
+  font-size: 1.3em;
+}
+
+h3 {
+  color: var(--lean-primary-focus);
+  font-size: 1.1em;
+}
+
+h4 {
+  color: var(--lean-text);
+  font-size: 1.05em;
+}
+
+h5 {
+  color: var(--lean-text);
+  font-size: 1em;
+}
+
+h6 {
+  color: var(--lean-text-light);
+  font-size: 0.9em;
+}
+
+a {
+  color: var(--lean-primary);
+}
+
+a:hover {
+  color: var(--lean-primary-focus);
+}
+
+pre {
+  background: var(--lean-surface);
+  border: 2px solid var(--lean-primary);
+  border-radius: 0.5em;
+}
+
+pre,
+:not(pre) > code {
+  font-size: 85%;
+}
+
+:not(pre) > code {
+  background: var(--lean-hover);
+  color: var(--lean-primary-focus);
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+  font-size: inherit;
+}
+
+small {
+  color: var(--lean-text-light);
+  font-size: 90%;
+}
+
+header,
+footer {
+  color: var(--lean-muted);
+  font-size: 18px;
+}
+
+section::after {
+  color: var(--lean-muted);
+  font-size: 24px;
+}
+
+.footnotes {
+  color: var(--lean-text-light);
+  font-size: 12px;
+}
+
+table {
+  border-color: var(--lean-border-strong);
+}
+
+th {
+  background: var(--lean-hover);
+  color: var(--lean-primary-focus);
+}
+
+td,
+th {
+  border-color: var(--lean-border-strong);
+}
+
+/*
+ * Theorem-like blocks
+ *
+ * Markdown:
+ * > **定理（定理名）**
+ * >
+ * > 定理の主張
+ */
+
+blockquote {
+  margin: 0.6em 0;
+  padding: 0.45em 0.75em;
+  border: 1px solid var(--lean-border-strong);
+  border-left: 0.3em solid var(--lean-primary);
+  border-radius: 0.2em;
+  background: var(--lean-surface);
+  color: inherit;
+  font-style: normal;
+}
+
+blockquote p {
+  margin: 0.25em 0;
+}
+
+blockquote > p:first-child {
+  color: var(--lean-primary-focus);
+}

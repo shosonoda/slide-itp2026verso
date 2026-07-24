@@ -1,11 +1,7 @@
 ---
 marp: true
-# style: |
-#   section {
-#       justify-content: start;
-#   }
 paginate: true
-theme: lean-rademacher
+theme: lean-web
 size: 16:9
 math: katex
 ---
@@ -145,31 +141,24 @@ Thus, the central task of this talk is to obtain a small bound on $\Delta_n(S)$.
 
 ```lean
 def populationRisk
-    [MeasurableSpace Ω]
-    (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω)
-    (Z : Ω → 𝒵) (h : H) : ℝ :=
+    [MeasurableSpace Ω] (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (h : H) : ℝ :=
   ∫ ω, ℓ h (Z ω) ∂μ
 
 def empiricalRisk
-    (n : ℕ) (ℓ : H → 𝒵 → ℝ)
-    (S : Fin n → 𝒵) (h : H) : ℝ :=
+    (n : ℕ) (ℓ : H → 𝒵 → ℝ) (S : Fin n → 𝒵) (h : H) : ℝ :=
   (n : ℝ)⁻¹ * ∑ k : Fin n, ℓ h (S k)
 
 def excessRisk
-    [MeasurableSpace Ω]
-    (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω)
+    [MeasurableSpace Ω] (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω)
     (Z : Ω → 𝒵) (h hstar : H) : ℝ :=
   populationRisk ℓ μ Z h - populationRisk ℓ μ Z hstar
 
 def riskDeviation
-    [MeasurableSpace Ω]
-    (n : ℕ) (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω)
-    (Z : Ω → 𝒵) (S : Fin n → 𝒵) (h : H) : ℝ :=
+    [MeasurableSpace Ω] (n : ℕ) (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (S : Fin n → 𝒵) (h : H) : ℝ :=
   |empiricalRisk n ℓ S h - populationRisk ℓ μ Z h|
 ```
 
-These definitions correspond to $L(f)$, $\widehat L_S(f)$, and
-$L(\widehat f)-L(f^\star)$, respectively.
+These definitions correspond to $L(f)$, $\widehat L_S(f)$, and $L(\widehat f)-L(f^\star)$, respectively.
 
 ---
 

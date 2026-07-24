@@ -32,3 +32,9 @@ draft.md について，以下の項目に対応してください．
 - draft.md を draft-jp.md に変更しました
 - draft-jp.md を英訳して draft-en.md を作成してください
 - 文字の溢れなどはこちらで調整するので，まずは確認しなくてよいです
+
+- スライドタイトルと本文が同じ色だと読みにくいので， default theme を参考にして色を変えてください
+
+- Lean公式ページ（ https://lean-lang.org/ ） で採用されている配色を模倣できますか． lean-rademacher.css と比較できるように，別の css として準備してください．
+
+- lean-rademacher-lean.css ではなく lean-web.css という名前に修正してください．
