@@ -37,22 +37,21 @@ math: katex
 - ITP 2026
 - Lean 4 + Mathlib
 
-この発表の問い:
+この発表の趣旨:
 
-> 有限個の訓練データから選んだモデルが未知のデータにも通用することを、
-> Lean でどこまで証明できるか。
+> 汎化誤差評価: 有限個の訓練データに基づいて選んだ学習モデルが未知のデータにもどの程度性能を発揮しうるかについての確率論的な評価
+> 基本的な理論と典型的な応用例を Lean 形式化した
 
 ---
 
 ## 2. 機械学習は有限標本から予測則を選ぶ
 
-- 未知の分布から訓練標本
-  $S=(z_1,\ldots,z_n)$ を得る。
-- 学習アルゴリズムは標本を見て
-  $\widehat h=A(S)$ を選ぶ。
-- 本当に知りたいのは、同じ標本上ではなく未知のデータ上の性能である。
+- 未知の分布 $\mu$ から訓練データ $S=(z_1,\ldots,z_n)$ を得る。
+- 学習アルゴリズムは標本を見て $\widehat h=A(S)$ を選ぶ。
+- 本当に知りたいのは、訓練データ $S$ 上ではなく未知のデータ $Z \sim \mu$ 上での性能である。
+- ただしこれは観測できない．そこで，確率論的に評価をする．
 
-$$
+<!-- $$
 \text{未知の分布}
 \longrightarrow
 \text{訓練標本 }S
@@ -60,13 +59,13 @@ $$
 \text{学習 }A
 \longrightarrow
 \widehat h
-$$
+$$ -->
 
 ---
 
 ## 3. 訓練誤差と母集団誤差
 
-損失を $\ell(h,z)$ とする。
+仮説 $h$ のデータ点 $z$ における損失を $\ell(h,z)$ とする。
 
 $$
 \widehat R_S(h)
@@ -76,18 +75,18 @@ R(h)
 =\mathbb E_{Z\sim\mu}[\ell(h,Z)].
 $$
 
-- $\widehat R_S(h)$: 訓練データから計算できる。
-- $R(h)$: 未知の分布に関する平均なので、直接は計算できない。
+- $\widehat R_S(h)$: （訓練誤差）訓練データから計算できる。
+- $R(h)$: （テスト誤差）未知の分布に関する平均なので、直接は計算できない。
 - 両者の差
   $\left|\widehat R_S(h)-R(h)\right|$
-  が汎化ギャップである。
+  を汎化ギャップという．
 
 ---
 
-## 4. なぜクラス全体を評価するのか
+## 4. 汎化ギャップの一様評価
 
-学習後の $\widehat h=A(S)$ は標本 $S$ に依存する。
-固定した $h$ だけの確率評価を、そのまま $\widehat h$ には使えない。
+学習後の $\widehat h=A(S)$ は標本 $S$ に依存するので，
+独立な各点 $h$ 対する確率評価を、そのまま $\widehat h$ の評価には使えない。
 
 $$
 \Delta_n(S)
@@ -120,10 +119,8 @@ $$
 を満たすとする。比較対象を $h^\star$ とすると、
 
 $$
-\boxed{
 R(\widehat h)-R(h^\star)
 \le 2\Delta_n(S)+\eta
-}
 $$
 
 となる。これは確率論を使わない決定論的不等式である。
@@ -137,12 +134,10 @@ Lean: `IsApproxERM.excessRisk_le_two_mul_uniformDeviation`
 
 ## 6. Rademacher 複雑度の直観
 
-標本 $S=(z_1,\ldots,z_n)$ を固定し、各点にランダムな符号
-$\sigma_k\in\{-1,+1\}$
-を付ける。
+標本 $S=(z_1,\ldots,z_n)$ を固定し、各点にランダムな符号 $\sigma_k\in\{-1,+1\}$ を付ける。
 
 $$
-\frac1n\sum_{k=1}^n \sigma_k F_h(z_k)
+\frac1n\sum_{k=1}^n \sigma_k h(z_k)
 $$
 
 を大きくできる $h$ をクラスから探す。
@@ -156,43 +151,37 @@ $$
 ## 7. 経験 Rademacher 複雑度
 
 $$
-\widehat{\mathfrak R}_n(F;S)
-=
+\widehat{\mathfrak R}_n(H;S)
+:=
 \mathbb E_\sigma
 \left[
 \sup_{h\in H}
 \left|
 \frac1n\sum_{k=1}^n
-\sigma_kF_h(z_k)
+\sigma_k h(z_k)
 \right|
-\right].
+\right],
+\quad 
+\mathfrak R_n(H):=\mathbb E_S[\widehat{\mathfrak R}_n(H;S)]
 $$
 
 Lean では符号全体を有限型として表す。
 
 ```lean
-def Signs (n : ℕ) : Type :=
-  Fin n → ({-1, 1} : Finset ℤ)
+def Signs (n : ℕ) : Type := Fin n → ({-1, 1} : Finset ℤ)
 
-def empiricalRademacherComplexity
-    (n : ℕ) (F : H → X → ℝ) (S : Fin n → X) : ℝ :=
+def empiricalRademacherComplexity (n : ℕ) (F : H → X → ℝ) (S : Fin n → X) : ℝ :=
   (Fintype.card (Signs n) : ℝ)⁻¹ *
     ∑ σ : Signs n, ⨆ h,
       |(n : ℝ)⁻¹ * ∑ k,
         (σ k : ℝ) * F h (S k)|
 ```
 
-標本についてさらに平均した量を
-$\mathfrak R_n(F)=\mathbb E_S[\widehat{\mathfrak R}_n(F;S)]$
-と書く。
-
 ---
 
 ## 8. 基本定理: Rademacher 複雑度による汎化評価
 
-関数クラス $F=\{F_h\}_{h\in H}$ が
-$|F_h(z)|\le b$
-を満たすとする。適切な可測性条件の下で、
+関数クラス $F=\{F_h\}_{h\in H}$ が $|F_h(z)|\le b$ を満たすとする。適切な可測性条件の下で、
 
 $$
 \mathbb E_S[\Delta_n(S)]
@@ -202,28 +191,28 @@ $$
 かつ
 
 $$
-\boxed{
 \Pr\left\{
 \Delta_n(S)
 \ge 2\mathfrak R_n(F)+\varepsilon
 \right\}
 \le
 \exp\left(-\frac{n\varepsilon^2}{2b^2}\right)
-}
 $$
 
 が成立する。
 
-$\varepsilon=b\sqrt{2\log(1/\delta)/n}$ とすれば、
-信頼度 $1-\delta$ の評価になる。
+言い換えると，$\varepsilon=b\sqrt{2\log(1/\delta)/n}$ とすれば、少なくとも $1-\delta$ 以上の確率で
+
+$$
+\Delta_n(S) < 2\mathfrak R_n(F)+\varepsilon
+$$
+が成り立つ
 
 ---
 
 ## 9. 証明スケッチ 1: symmetrization
 
-独立な ghost sample
-$S'=(Z'_1,\ldots,Z'_n)$
-を導入する。
+独立な ghost sample $S'=(Z'_1,\ldots,Z'_n)$ を導入する。
 
 $$
 \begin{aligned}
@@ -289,15 +278,12 @@ Lean:
 ## 11. 観測した複雑度を残す
 
 $\mathfrak R_n(F)$ は分布に依存し、直接は観測できない。
-一方、
-$\widehat{\mathfrak R}_n(F;S)$
-は標本に依存する量である。
+一方、$\widehat{\mathfrak R}_n(F;S)$ は training 標本に依存して計算できる量である．
 
 経験 Rademacher 複雑度も一要素の置換に対する変化が
 $2b/n$ 以下になる。下側集中を基本定理と union bound で合わせると、
 
 $$
-\boxed{
 \Pr\left\{
 \Delta_n(S)
 \ge
@@ -305,10 +291,9 @@ $$
 \right\}
 \le
 2\exp\left(-\frac{n\varepsilon^2}{2b^2}\right)
-}
 $$
 
-を得る。これが現在の標本依存 API の基礎になる。
+を得る。これを用いて empirical and population Rademachers を bridge できる．
 
 ---
 
@@ -317,14 +302,10 @@ $$
 ### i.i.d. 標本
 
 - 一つの確率変数 $X:\Omega\to\mathcal X$
-- 積測度
-  $\mu^n=\operatorname{Measure.pi}(\lambda\_\Rightarrow\mu)$
-- 積空間上の点
-  $\omega:\operatorname{Fin}n\to\Omega$
+- 積測度: $\mu^n=\operatorname{Measure.pi}(\lambda\_\Rightarrow\mu)$
+- 積空間上の点: $\omega:\operatorname{Fin}n\to\Omega$
 
-を用いて、
-$S=X\circ\omega$
-と表す。i.i.d. 性は座標写像の性質として再利用する。
+を用いて、$S=X\circ\omega$ と表す。i.i.d. 性は座標写像の性質として再利用する。
 
 ### Rademacher 符号
 
@@ -337,10 +318,11 @@ $$
 
 ---
 
-## 13. 形式化上の工夫: 非可算な上限の可測性
+## 13. 形式化の工夫と恩恵: 非可算な上限の可測性
 
 可算個の可測関数の上限は可測である。
-しかし、非可算クラス $H$ 上の supremum は自動的には可測でない。
+しかし、非可算クラス $H$ 上の supremum は一般には可測でない。
+本形式化を通じて可測となる条件を明らかにした．
 
 $H$ が可分で、$h\mapsto F_h(x)$ が連続なら、稠密列に制限する。
 
@@ -373,7 +355,6 @@ $$
 を証明すればよい。共通定理から
 
 $$
-\boxed{
 \Pr\left\{
 \Delta_n(S)
 \ge
@@ -381,7 +362,6 @@ $$
 +3b\sqrt{\frac{2\log(2/\delta)}{n}}
 \right\}
 \le\delta
-}
 $$
 
 を得る。
@@ -390,7 +370,7 @@ $$
 uniform_deviation_tail_bound_separable_of_sample_empirical_le_delta
 ```
 
-応用の手順:
+<!-- 応用の手順:
 
 $$
 \text{関数クラスを定義}
@@ -400,7 +380,7 @@ $$
 \text{共通 bridge}
 \to
 \text{汎化・余剰誤差}
-$$
+$$ -->
 
 ---
 
@@ -496,8 +476,7 @@ $$
 
 - $\ell_1/\ell_\infty$ 双対性で、$2d$ 個の signed coordinate に帰着する。
 - Massart の補題により $\sqrt{\log(2d)}$ が現れる。
-- $|x_j|\le X_\infty$ なら
-  $Q_\infty(S)\le X_\infty/\sqrt n$。
+- $|x_j|\le X_\infty$ なら $Q_\infty(S)\le X_\infty/\sqrt n$。
 
 ---
 
@@ -516,24 +495,21 @@ $$
 を考える。
 
 $$
-\boxed{
 \widehat{\mathfrak R}_n(F;S)
 \le
 \frac{\Lambda}{n}
 \sqrt{\sum_kK(x_k,x_k)}
-}
 $$
 
 - 右辺は観測した kernel trace に依存する。
-- $K(x,x)\le r^2$ なら
-  $r\Lambda/\sqrt n$。
+- $K(x,x)\le r^2$ なら $r\Lambda/\sqrt n$。
 - 同じ共通 bridge から、kernel trace を残した高確率評価を得る。
 
 ---
 
 ## 19. 例4: Dudley entropy integral
 
-標本上の関数間の距離を
+標本 $S$ 上の関数間の擬距離を
 
 $$
 d_S(f,g)
@@ -543,7 +519,7 @@ d_S(f,g)
 }
 $$
 
-とする。半径 $u$ の球でクラスを覆うために必要な個数を $N(u)$ とすると、
+とする。半径 $u$ の球でクラス $F$ を覆うために必要な個数を $N(u)$ とすると、
 
 $$
 \widehat{\mathfrak R}^{\mathrm{one}}_n(F;S)
@@ -586,9 +562,7 @@ def signSymmetrization
   fun hb x ↦ if hb.2 then F hb.1 x else -F hb.1 x
 ```
 
-この等式により、観測標本上の entropy integral
-$D_\alpha(S)$
-を、そのまま共通 bridge の $C(S)$ に代入できる。
+この等式により、観測標本上の entropy integral $D_\alpha(S)$ を、そのまま共通 bridge の $C(S)$ に代入できる。
 
 ---
 
@@ -624,7 +598,7 @@ $$
 
 を得る。
 
----
+<!-- ---
 
 ## 22. 論文から現在の `ss` ブランチまで
 
@@ -646,11 +620,11 @@ $$
 設計の中心:
 
 > 各応用は固定標本上の複雑度だけを証明し、
-> 確率論との接続は共通定理に任せる。
+> 確率論との接続は共通定理に任せる。 -->
 
 ---
 
-## 23. 現在の主な制限
+## 23. 現在の主な残課題
 
 - 任意の positive semidefinite kernel から RKHS を構成するのではなく、
   特徴写像から誘導される kernel を扱う。
@@ -704,7 +678,7 @@ Lean + Mathlib 上の一つの経路として接続する。
 
 ## 26. まとめ
 
-1. 汎化では、標本から選ばれたモデルを守るために一様偏差を評価する。
+1. 学習済みモデルは訓練データに依存するので，その汎化は一様偏差を評価する。
 2. Rademacher 複雑度は、関数クラスが標本上でノイズに合わせる能力を測る。
 3. symmetrization と McDiarmid により、複雑度を高確率の汎化評価へ変換できる。
 4. Lean では、非可算 supremum の可測性を稠密可算部分クラスで解決した。
