@@ -11,6 +11,13 @@
 
 section {
   font-size: 29px;
+  justify-content: flex-start;
+  padding-top: 30px;
+}
+
+section.title {
+  justify-content: center;
+  padding-top: 70px;
 }
 
 h1 {
@@ -66,4 +73,32 @@ section::after {
 
 .footnotes {
   font-size: 12px;
+}
+
+/*
+ * Theorem-like blocks
+ *
+ * Markdown:
+ * > **定理（定理名）**
+ * >
+ * > 定理の主張
+ */
+
+blockquote {
+  margin: 0.6em 0;
+  padding: 0.45em 0.75em;
+  border: 1px solid #9bb4d1;
+  border-left: 0.3em solid #416f9f;
+  border-radius: 0.2em;
+  background: #f4f7fb;
+  color: inherit;
+  font-style: normal;
+}
+
+blockquote p {
+  margin: 0.25em 0;
+}
+
+blockquote > p:first-child {
+  color: #274f78;
 }
