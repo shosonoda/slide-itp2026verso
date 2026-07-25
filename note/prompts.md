@@ -38,3 +38,21 @@ draft.md について，以下の項目に対応してください．
 - Lean公式ページ（ https://lean-lang.org/ ） で採用されている配色を模倣できますか． lean-rademacher.css と比較できるように，別の css として準備してください．
 
 - lean-rademacher-lean.css ではなく lean-web.css という名前に修正してください．
+
+---
+note
+- l.60 に pics/hankagosa-yoko 追加
+- l. 377 McDiarmid's inequality を一般の statement にしてください
+- predictor と hypothesis が混在しています．使い分けはありますか．なければ hypothesis に統一してください．
+- l. 116 oracle inequality for approximate ERM をどう使うか見えない．もう少し詳しく説明してください．
+- ι と H が混在している
+
+- hypothesis f に損失も含めるという説明に関し，lean 実装もそうなっていますか
+- measure.pi $\lambda$ 不要
+  ```lean
+  local notation "μⁿ" => Measure.pi (fun _ ↦ μ)
+  ```
+- empirical/population loss は， lean 実装にあわせると risk
+- talk 消す
+- l.457 denseSeq を使ってどのように拡張したか説明する
+- Example 3-4, lean
