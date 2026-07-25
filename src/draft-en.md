@@ -57,7 +57,11 @@ This study covers:
   rather than its performance on the training sample $S$.
 - This quantity is not directly observable, so we evaluate it probabilistically.
 
-***[pics/hankagosa-yoko]***
+<div style="text-align: center;">
+  <img src="../pics/hankagosa-yoko-transparent.png"
+       alt="Generalization from training data to unseen data"
+       width="600">
+</div>
 
 ---
 
