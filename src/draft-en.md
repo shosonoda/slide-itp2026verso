@@ -31,37 +31,42 @@ Presenter: Sho Sonoda (RIKEN AIP / CyberAgent Inc)
 
 ---
 
-## What this study covers
+## Motivation
 
-A statistical machine learning model is selected from **finitely many training examples**.
-<!-- so the prediction performance on **unseen test data** can be extremely worse. -->
+As machine-learning research grows, trustworthy AI assistance for theoretical
+work requires **machine-checkable foundations**.
 
-A **generalization error bound** is a probabilistic guarantee of how well the learning model can perform on **unseen test examples**.
-<!-- the prediction performance of a learning model on **unseen test datasets**. -->
+![center width:600px NeurIPS submissions and decisions by year](../pics/NeurIPSStatistics202607PaperCopilot.png)
 
-This study covers:
-
-- a basic generalization error bound using Rademacher complexity,
-- applications to regularized linear models, 
-- extension to Dudley's entropy integral, and
-- techniques used to formalize these results in Lean 4 + Mathlib.
+<small>Source: [Paper Copilot, “NeurIPS Statistics”](https://papercopilot.com/statistics/neurips-statistics/).</small>
 
 ---
 
-## Machine learning selects a hypothesis from a finite sample
+## General formulation of statistical machine learning:
 
-- We receive training data $S=(z_1,\ldots,z_n)$ from an unknown distribution $\mu$.
-- After observing the sample, a learning algorithm $A$ selects
-  $\widehat f=A(S)$ from a function class $\mathcal F$.
+**Machine learning selects a hypothesis from a finite sample**
+
+- We receive a **finite** training data $S=(z_1,\ldots,z_n)$ from an unknown distribution $\mu$.
+- A learning algorithm $A$ selects **hypothesis** $\widehat f=A(S)$ from a function class $\mathcal F$.
 - What we really want to know is its performance on unseen data $Z\sim\mu$,
   rather than its performance on the training sample $S$.
-- This quantity is not directly observable, so we evaluate it probabilistically.
+- Because this performance is not directly observable, a **generalization error bound** provides a probabilistic guarantee from the finite sample.
 
-<div style="text-align: center;">
-  <img src="../pics/hankagosa-yoko-transparent.png"
-       alt="Generalization from training data to unseen data"
-       width="600">
-</div>
+![center width:600px Generalization from training data to unseen data](../pics/hankagosa-yoko-manu.png)
+
+---
+
+## What this study formalizes
+
+- the basic generalization bound using Rademacher complexity,
+- applications to regularized linear models,
+- an extension via Dudley's entropy integral.
+
+---
+
+<!-- _class: title -->
+
+# Generalization from finite samples
 
 ---
 
@@ -193,6 +198,12 @@ theorem IsApproxERM.excessRisk_le_two_mul_uniformDeviation
 
 The mathematical hypotheses $\widehat f,f^\star\in\mathcal F$ are represented in Lean 
 by the indices `hhat hstar : H` and the evaluation map `ℓ : H → 𝒵 → ℝ`.
+
+---
+
+<!-- _class: title -->
+
+# Rademacher complexity and the main theorem
 
 ---
 
@@ -339,6 +350,12 @@ theorem uniform_deviation_tail_bound_separable_of_pos
 ```
 
 The mathematical class $\mathcal F$ is represented by a family `F` indexed by `H`; measurability, uniform boundedness, and continuity in the index are explicit in the type.
+
+---
+
+<!-- _class: title -->
+
+# Proof strategy and formalization
 
 ---
 
@@ -526,6 +543,12 @@ theorem separableSpaceSup_eq_real
 As the type shows, equality of the suprema requires `Continuous g`.
 This lemma proves that empirical complexity, expected complexity, and uniform
 deviation are unchanged by restriction to the dense sequence.
+
+---
+
+<!-- _class: title -->
+
+# Applications
 
 ---
 
@@ -916,6 +939,12 @@ Central design principle:
 The formalization makes explicit where measurability, separability,
 and finiteness assumptions are required, although these conditions are often
 left implicit in informal mathematics. -->
+
+---
+
+<!-- _class: title -->
+
+# Related work and conclusion
 
 ---
 

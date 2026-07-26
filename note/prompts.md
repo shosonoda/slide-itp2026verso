@@ -56,3 +56,5 @@ note
 - talk 消す
 - l.457 denseSeq を使ってどのように拡張したか説明する
 - Example 3-4, lean
+
+- 冒頭に動機付けを追記しました．英語で整えてください．また，画像を読み込んでください．出典 https://papercopilot.com/statistics/neurips-statistics/ を示してください．

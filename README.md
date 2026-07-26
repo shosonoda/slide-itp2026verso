@@ -17,9 +17,12 @@ marp src/draft-en.md -o output/draft-en.html
 To export the Marp slides as PDF:
 
 ```bash
-npx @marp-team/marp-cli --pdf src/draft-jp.md -o output/draft-jp.pdf
-npx @marp-team/marp-cli --pdf src/draft-en.md -o output/draft-en.pdf
+npx @marp-team/marp-cli --pdf --allow-local-files src/draft-jp.md -o output/draft-jp.pdf
+npx @marp-team/marp-cli --pdf --allow-local-files src/draft-en.md -o output/draft-en.pdf
 ```
+
+`--allow-local-files` is required because the slides load images from the local
+`pics/` directory.
 
 Lean code fences can stay as ```` ```lean ```` (or ```` ```lean4 ````).
 

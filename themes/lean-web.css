@@ -30,6 +30,11 @@ section {
   padding-top: 30px;
 }
 
+img[alt~="center"] {
+  display: block;
+  margin-inline: auto;
+}
+
 section.title {
   background:
     radial-gradient(
