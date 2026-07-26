@@ -17,6 +17,11 @@ marp src/draft-en.md -o output/draft-en.html
 To export the Marp slides as PDF:
 
 ```bash
+marp --pdf --allow-local-files src/draft-en.md -o output/draft-en.pdf
+```
+
+or you can use npx as well:
+```bash
 npx @marp-team/marp-cli --pdf --allow-local-files src/draft-jp.md -o output/draft-jp.pdf
 npx @marp-team/marp-cli --pdf --allow-local-files src/draft-en.md -o output/draft-en.pdf
 ```
