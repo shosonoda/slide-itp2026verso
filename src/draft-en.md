@@ -65,11 +65,11 @@ As machine-learning research grows, trustworthy AI assistance for theoretical wo
 
 <!-- _class: title -->
 
-# Generalization from finite samples
+# What controls generalization performance
 
 ---
 
-## Generalization gap and excess risk arise together
+## Empirical risk and population risk
 
 Let **hypothesis** $f(x,y)=\ell(g(x),y)$ denote **predictor** $g$ followed by **loss function** $\ell$. Define the **empirical risk** and **population risk** as below.
 $$
@@ -78,9 +78,26 @@ $$
 L(f):=\mathbb E[f(Z)].
 $$
 
+```lean
+def populationRisk
+    [MeasurableSpace Ω]
+    (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω)
+    (Z : Ω → 𝒵) (h : H) : ℝ :=
+  ∫ ω, ℓ h (Z ω) ∂μ
+
+def empiricalRisk
+    (n : ℕ) (ℓ : H → 𝒵 → ℝ)
+    (S : Fin n → 𝒵) (h : H) : ℝ :=
+  (n : ℝ)⁻¹ * ∑ k : Fin n, ℓ h (S k)
+```
+
 While **training error** $\widehat L_S(\widehat f)$ is observable, we want to know **test error** $L(\widehat f)$.
 
-If $\widehat f$ is an $\eta$-approximate empiricak risk minimizer (ERM) and $f^\star$ is any comparator, then
+---
+
+## Generalization gap and excess risk
+
+If $\widehat f$ is an $\eta$-approximate empirical risk minimizer (ERM) and $f^\star$ is any comparator, then
 
 $$
 \begin{aligned}
@@ -93,15 +110,31 @@ _{\text{generalization gap at $\widehat f$}}
 _{\text{optimization error }\le\eta}
 +
 \underbrace{\widehat L_S(f^\star)-L(f^\star)}
-_{\text{generalization gap at $f^\star$}}.
+_{\text{(generalization) gap at $f^\star$}}
 \end{aligned}
 $$
 
-Thus, **excess risk** is controlled once the **uniform deviation** $\sup_{f \in \mathcal F} |\widehat L_S(f) - L(f) |$ is controlled. We therefore use uniform deviation as the main object in this talk.
+Thus, **excess risk** is controlled once the **uniform deviation** $\sup_{f \in \mathcal F} |\widehat L_S(f) - L(f) |$ is controlled. We therefore use uniform deviation as the main object.
+
+<!-- `excessRisk` is signed, while `riskDeviation` is the absolute value of the
+generalization gap used for uniform control. -->
+
+```lean
+def excessRisk
+    [MeasurableSpace Ω]
+    (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵)　(h hstar : H) : ℝ :=
+  populationRisk ℓ μ Z h - populationRisk ℓ μ Z hstar
+
+def riskDeviation
+    [MeasurableSpace Ω]
+    (n : ℕ) (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵)
+    (S : Fin n → 𝒵) (h : H) : ℝ :=
+  |empiricalRisk n ℓ S h - populationRisk ℓ μ Z h|
+```
 
 ---
 
-## Uniform deviation handles a data-dependent hypothesis
+## Uniform deviation controls data-dependent excess risk
 
 <!-- For a fixed $f$, the law of large numbers controls its generalization gap.
 It cannot be applied directly to $\widehat f=A(S)$, which depends on the sample.
@@ -120,14 +153,9 @@ $$
 L(\widehat f)-L(f^\star)\le 2\Delta_n(S)+\eta.
 $$
 
-The same objects are represented directly in Lean:
+The supremum of these pointwise deviations is defined directly in Lean:
 
 ```lean
-def riskDeviation
-    [MeasurableSpace Ω]
-    (n : ℕ) (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (S : Fin n → 𝒵) (h : H) : ℝ :=
-  |empiricalRisk n ℓ S h - populationRisk ℓ μ Z h|
-
 def uniformDeviation
     (n : ℕ) (f : H → 𝒵 → ℝ) (μ : Measure Ω)
     (Z : Ω → 𝒵) (S : Fin n → 𝒵) : ℝ :=
@@ -135,12 +163,13 @@ def uniformDeviation
     μ[fun ω' ↦ f h (Z ω')]|
 ```
 
----
+<!-- ---
 
-## The oracle inequality in Lean mirrors the decomposition
+## Lean: a general deterministic oracle inequality
 
-Mathematically, approximate ERM means
-$\widehat L_S(\widehat f)\le\widehat L_S(f)+\eta$ for every $f\in\mathcal F$.
+The Lean theorem is not tied to a particular ERM algorithm or to an exact
+minimizer. It only assumes that the output satisfies the $\eta$-approximate
+empirical comparison and that every pointwise risk deviation is at most $D$.
 
 ```lean
 def IsApproxERM
@@ -149,17 +178,17 @@ def IsApproxERM
   ∀ h, empiricalRisk n ℓ S hhat ≤
     empiricalRisk n ℓ S h + η
 
-theorem IsApproxERM.excessRisk_le_two_mul_uniformDeviation
-    {hhat hstar : H} {η : ℝ}
+theorem IsApproxERM.excessRisk_le
+    {hhat hstar : H} {η D : ℝ}
     (hERM : IsApproxERM η n ℓ S hhat)
-    (hbounded : BddAbove
-      (Set.range fun h ↦ riskDeviation n ℓ μ Z S h)) :
+    (hdev : ∀ h, riskDeviation n ℓ μ Z S h ≤ D) :
     excessRisk ℓ μ Z hhat hstar ≤
-      2 * uniformDeviation n ℓ μ Z S + η
+      2 * D + η
 ```
 
-Here `hhat hstar : H` represent $\widehat f,f^\star\in\mathcal F$.
-No population-risk minimizer is required; any comparator can be used.
+Thus the result applies to any learner output satisfying this comparison
+property, with any comparator `hstar`. The uniform-deviation inequality is the
+special case $D=\Delta_n(S)$. -->
 
 ---
 
@@ -169,29 +198,10 @@ No population-risk minimizer is required; any comparator can be used.
 
 ---
 
-## Intuition behind Rademacher complexity
-
-Fix a sample $S=(z_1,\ldots,z_n)$ and assign a random sign $\sigma_k\in\{-1,+1\}$ to each point.
-
-$$
-Q(f,\sigma_{1:n},S) := 
-\frac1n\sum_{k=1}^n \sigma_k f(z_k)
-$$
-
-We then search for an $f\in\mathcal F$ that makes this quantity $Q$ large.
-
-- Small: the class $\mathcal F$ cannot easily fit random noise.
-- Large: the class $\mathcal F$ can express many patterns and is more prone to overfitting.
-
-So, it measures the freedom to select $f$ after observing the sample.
-
----
-
 ## Rademacher complexity
 
-Given a sample $S$ and random signs $\sigma_k \in \{-1,+1\}$, set
-
-the empirical (absolute) Rademacher complexity
+Given a sample $S=(z_1,\ldots,z_n)$ and assign a random sign $\sigma_k \in \{-1,+1\}$ to each point.
+Define the empirical (absolute) Rademacher complexity
 $$
 \widehat{\mathfrak R}_n(\mathcal F;S)
 :=
@@ -224,11 +234,28 @@ $$
 
 ---
 
+## Intuition behind Rademacher complexity
+
+Fix a sample $S=(z_1,\ldots,z_n)$ and assign a random sign $\sigma_k\in\{-1,+1\}$ to each point.
+
+$$
+Q(f,\sigma_{1:n},S) :=
+\frac1n\sum_{k=1}^n \sigma_k f(z_k)
+$$
+
+We then search for an $f\in\mathcal F$ that makes this quantity $Q$ large.
+
+- Small: the class $\mathcal F$ cannot easily fit random noise.
+- Large: the class $\mathcal F$ can express many patterns and is more prone to overfitting.
+
+So, it measures the freedom to select $f$ after observing the sample.
+
+
+---
+
 ## Lean: Rademacher complexities and uniform deviation
 
-The mathematical objects
-$\widehat{\mathfrak R}_n$, $\mathfrak R_n$, and $\Delta_n$
-are kept together in the same Lean API:
+<!-- The mathematical objects $\widehat{\mathfrak R}_n$, $\mathfrak R_n$, and $\Delta_n$ are kept together in the same Lean API: -->
 
 ```lean
 def Signs (n : ℕ) : Type := Fin n → ({-1, 1} : Finset ℤ)
@@ -297,10 +324,7 @@ $$\Delta_n(S)<2\mathfrak R_n(\mathcal F)+\varepsilon,
 
 ## Lean: the main theorem for a separable class
 
-The tail bound
-$\Pr\{\Delta_n\ge2\mathfrak R_n+\varepsilon\}
-\le\exp(-n\varepsilon^2/(2b^2))$
-is stated directly as:
+The tail bound $\Pr\{\Delta_n\ge2\mathfrak R_n+\varepsilon\} \le\exp(-n\varepsilon^2/(2b^2))$ is stated directly as:
 
 ```lean
 theorem uniform_deviation_tail_bound_separable_of_pos
@@ -309,8 +333,7 @@ theorem uniform_deviation_tail_bound_separable_of_pos
     [IsProbabilityMeasure μ]
     (F : H → 𝒳 → ℝ) (hF_meas : ∀ h, Measurable (F h))
     (X : Ω → 𝒳) (hX : Measurable X)
-    {b : ℝ} (hb : 0 < b)
-    (hF_bound : ∀ h x, |F h x| ≤ b)
+    {b : ℝ} (hb : 0 < b) (hF_bound : ∀ h x, |F h x| ≤ b)
     (hF_cont : ∀ x : 𝒳, Continuous fun h ↦ F h x)
     {ε : ℝ} (hε : 0 ≤ ε) :
     (μⁿ {S |
@@ -319,7 +342,10 @@ theorem uniform_deviation_tail_bound_separable_of_pos
       (-ε ^ 2 * n / (2 * b ^ 2)).exp
 ```
 
-The mathematical class $\mathcal F$ is represented by a family `F` indexed by `H`; measurability, uniform boundedness, and continuity in the index are explicit in the type.
+The mathematical class $\mathcal F$ is represented by a family `F` indexed by `H`.
+The regularity conditions on the index set `H` are formulated **more generally** than in standard textbook statements.
+
+<!-- measurability, uniform boundedness, and continuity in the index are explicit in the type. -->
 
 ---
 
@@ -380,8 +406,7 @@ We first prove this form, where `Countable H` ensures measurability of the supre
 > **Theorem (McDiarmid's inequality)**
 >
 > Let $Z_1,\ldots,Z_n$ be independent random variables. Suppose that replacing
-> only the $k$-th coordinate of the input to $\phi$ changes its value by at
-> most $c_k$:
+> only the $k$-th coordinate of the input to $\phi$ changes its value by at most $c_k$:
 > $$
 > |\phi(z_1,\ldots,z_n)-\phi(z_1,\ldots,z'_k,\ldots,z_n)|\le c_k.
 > $$
@@ -409,6 +434,9 @@ We first prove this form, where `Countable H` ensures measurability of the supre
 > \exp\left(-\frac{n\varepsilon^2}{2b^2}\right).
 > $$ -->
 
+McDiarmid with $\phi = \Delta_n(S)$ and $\mathbb E[\Delta_n(S)] \le2 \mathfrak R_n(\mathcal F)$ proves the main theorem.
+
+
 Combining this concentration bound with the expectation bound proves the main theorem.
 
 <!-- Lean represents a one-coordinate replacement as `Function.update S i x'` and passes the sensitivity estimate directly to the product-measure version of McDiarmid's inequality. -->
@@ -417,9 +445,7 @@ Combining this concentration bound with the expectation bound proves the main th
 
 ## Lean: the bounded-difference property of uniform deviation
 
-The mathematical sensitivity estimate
-$|\Delta_n(S)-\Delta_n(S^{(k)})|\le2b/n$
-uses `Function.update` in Lean:
+The mathematical sensitivity estimate $|\Delta_n(S)-\Delta_n(S^{(k)})|\le2b/n$ uses `Function.update` in Lean:
 
 ```lean
 theorem uniformDeviation_bounded_difference
@@ -463,12 +489,12 @@ This connects empirical and expected Rademacher complexities.
 
 The supremum of countably-many measurable functions is measurable.
 In contrast, a supremum over an uncountable class $\mathcal F$ need not be measurable.
-Our formalization identifies conditions that ensure measurability.
+In our formalization, we use conditions that ensure measurability.
 
 > **Lemma (supremum over a countable dense sequence)**
 >
-> Let $g:H\to\mathbb R$ be continuous on a nonempty separable parameter space
-> $H$, and let $(h_m)_{m\in\mathbb N}$ be a countable dense sequence. Then
+> Let $g:H\to\mathbb R$ be continuous on a nonempty separable parameter space $H$,
+> and let $(h_m)_{m\in\mathbb N}$ be a countable dense sequence. Then
 >
 > $$
 > \sup_{h\in H}g(h)
@@ -476,16 +502,16 @@ Our formalization identifies conditions that ensure measurability.
 > \sup_{m\in\mathbb N}g(h_m).
 > $$
 
-In applications, continuity of the evaluation map
-$h\mapsto F(h,x)$ for each $x$ implies the required continuity of $g$.
+Here a dense sequence is a sequence whose range is dense in $H$; repetitions
+are allowed, and the order itself is irrelevant.
+
+In applications, continuity of the evaluation map $h\mapsto F(h,x)$ for each $x$ implies the required continuity of $g$.
 
 ---
 
 ## Lean: moving the supremum to `denseSeq`
 
-The mathematical equality
-$\sup_{h\in H}g(h)=\sup_{m\in\mathbb N}g(h_m)$
-becomes a reusable Lean lemma:
+<!-- The equality $\sup_{h\in H}g(h)=\sup_{m\in\mathbb N}g(h_m)$ becomes a reusable Lean lemma: -->
 
 ```lean
 def denseSeq
@@ -497,8 +523,7 @@ theorem denseRange_denseSeq
     DenseRange (denseSeq H)
 
 noncomputable abbrev denseRestriction
-    [TopologicalSpace H] [SeparableSpace H] [Nonempty H]
-    (F : H → α) : ℕ → α :=
+    [TopologicalSpace H] [SeparableSpace H] [Nonempty H] (F : H → α) : ℕ → α :=
   F ∘ denseSeq H
 
 theorem separableSpaceSup_eq_real
@@ -507,9 +532,7 @@ theorem separableSpaceSup_eq_real
     ⨆ h : H, g h = ⨆ m : ℕ, g (denseSeq H m)
 ```
 
-`denseSeq` is a proof device, not a computational procedure. Continuity then
-shows that empirical complexity, expected complexity, and uniform deviation
-are unchanged by the restriction.
+`denseSeq` is a proof device, not a computational procedure. Continuity then shows that empirical complexity, expected complexity, and uniform deviation are unchanged by the restriction.
 
 ---
 
@@ -562,8 +585,7 @@ theorem
     (F : H → 𝒳 → ℝ) (hF_meas : ∀ h, Measurable (F h))
     (X : Ω → 𝒳) (hX : Measurable X)
     (C : (Fin n → 𝒳) → ℝ)
-    {b δ : ℝ} (hb : 0 < b)
-    (hF_bound : ∀ h x, |F h x| ≤ b)
+    {b δ : ℝ} (hb : 0 < b) (hF_bound : ∀ h x, |F h x| ≤ b)
     (hF_cont : ∀ x, Continuous fun h ↦ F h x)
     (hC : ∀ S, empiricalRademacherComplexity n F S ≤ C S)
     (hδ : 0 < δ) (hδ_one : δ ≤ 1) :
@@ -645,15 +667,7 @@ The empirical norms remain on the right-hand side and can be passed directly as 
 ## End-to-end $\ell_2$ bound
 
 If $\|x_k\|\le X$, then the function values are bounded by $b=XW$.
-Substitute
-
-$$
-C(S)
-=
-\frac Wn\sqrt{\sum_k\|x_k\|_2^2}
-$$
-
-into the basic generalization theorem.
+Substitute $C(S) = \frac Wn\sqrt{\sum_k\|x_k\|_2^2}$ into the basic generalization theorem.
 
 > **Theorem (sample-dependent generalization for $\ell_2$ predictors)**
 >
@@ -665,15 +679,14 @@ into the basic generalization theorem.
 > +3XW\sqrt{\frac{2\log(2/\delta)}{n}}.
 > $$
 
-This is sharper than a bound using only the uniform radius when
-the observed sample norms are small.
+This is sharper than a bound using only the uniform radius when the observed sample norms are small.
 
 ---
 
 ## Lean: the end-to-end $\ell_2$ theorem
 
-This statement substitutes the sample norm bound $C(S)$ directly into the
-general theorem, so the mathematical right-hand side appears unchanged in Lean.
+<!-- This statement substitutes the sample norm bound $C(S)$ directly into the
+general theorem, so the mathematical right-hand side appears unchanged in Lean. -->
 
 ```lean
 theorem
@@ -730,6 +743,26 @@ Proof idea:
 
 ---
 
+## Lean: the fixed-sample $\ell_1/\ell_\infty$ bound
+
+`linearPredictorL1SampleRadius S` is the quantity $Q_\infty(S)$ on the
+previous slide.
+
+```lean
+theorem linear_predictor_l1_empirical_bound_of_sample
+    (d n : ℕ) (Xinf W : ℝ) (hW : 0 ≤ W)
+    (d_pos : 0 < d) (n_pos : 0 < n)
+    (S : Fin n → LinftyBall (d := d) Xinf) :
+    empiricalRademacherComplexity n
+        (linearPredictorL1 :
+          L1Ball (d := d) W →
+            LinftyBall (d := d) Xinf → ℝ) S
+      ≤ W * linearPredictorL1SampleRadius S *
+        Real.sqrt (2 * Real.log (2 * d))
+```
+
+---
+
 ## Example 3: RKHS reuses the Hilbert-space proof
 
 Consider a feature map $\Phi(x)\in\mathcal H$ and
@@ -759,6 +792,27 @@ $$
 
 ---
 
+## Lean: the RKHS kernel-trace bound
+
+Here `kernelTrace Φ S` is
+$\sum_k K(S_k,S_k)=\sum_k\|\Phi(S_k)\|^2$.
+
+```lean
+theorem rkhs_empiricalRademacherComplexity_le_kernelTrace
+    [CompleteSpace H]
+    (Φ : 𝒳 → H) (Λ : ℝ) (hΛ : 0 ≤ Λ)
+    (S : Fin n → 𝒳) :
+    empiricalRademacherComplexity n
+        (rkhsPredictor Φ :
+          Metric.closedBall (0 : H) Λ → 𝒳 → ℝ) S ≤
+      Λ * (n : ℝ)⁻¹ * Real.sqrt (kernelTrace Φ S)
+```
+
+The proof reuses the general Hilbert-space predictor theorem after composing
+the sample with `Φ`.
+
+---
+
 ## Example 4: Dudley's entropy integral
 
 Define the empirical pseudometric between functions on the sample $S$ by
@@ -785,6 +839,31 @@ Let $N(u,\mathcal F,d_S)$ be the number of radius-$u$ balls needed to cover the 
 > \int_\alpha^{c/2}
 > \sqrt{\log N(u,\mathcal F,d_S)}\,du.
 > $$
+
+---
+
+## Lean: the fixed-sample Dudley bound
+
+In this statement, Lean's `ε` is the truncation scale $\alpha$ on the previous
+slide, and `EmpiricalFunctionSpace F S` carries the empirical pseudometric.
+
+```lean
+theorem dudley_entropy_integral_bound
+    {n : ℕ} {ι : Type u} [Nonempty ι]
+    {F : ι → 𝒳 → ℝ} {S : Fin n → 𝒳} {c ε : ℝ}
+    (hε : 0 < ε)
+    (hTotallyBounded :
+      TotallyBounded
+        (Set.univ : Set (EmpiricalFunctionSpace F S)))
+    (hn : 0 < n)
+    (hNorm : ∀ h : ι, empiricalNorm S (F h) ≤ c)
+    (hεc : ε < c / 2) :
+    empiricalRademacherComplexity_without_abs n F S ≤
+      4 * ε + (12 / Real.sqrt n) *
+        (∫ x : ℝ in ε..(c / 2),
+          Real.sqrt
+            (Real.log (coveringNumber hTotallyBounded x)))
+```
 
 ---
 
@@ -820,7 +899,7 @@ def signSymmetrization
 The Boolean index selects either `F i` or `-F i`.
 The entropy integral $D_\alpha(S)$ on the observed sample can then be substituted for $C(S)$ in the basic generalization theorem.
 
----
+<!-- ---
 
 ## From predictors to losses and ERM
 
@@ -841,9 +920,9 @@ def supervisedLossClass
 > $$
 > \widehat{\mathfrak R}_n(\ell\circ\mathcal F;S)
 > \le 2\rho\widehat{\mathfrak R}_n(\mathcal F;S).
-> $$
+> $$ -->
 
----
+<!-- ---
 
 ## The same decomposition yields excess risk for learning
 
@@ -905,7 +984,7 @@ Central design principle:
 
 The formalization makes explicit where measurability, separability,
 and finiteness assumptions are required, although these conditions are often
-left implicit in informal mathematics. -->
+left implicit in informal mathematics. --> -->
 
 ---
 
