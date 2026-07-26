@@ -33,12 +33,11 @@ Presenter: Sho Sonoda (RIKEN AIP / CyberAgent Inc)
 
 ## Motivation
 
-As machine-learning research grows, trustworthy AI assistance for theoretical
-work requires **machine-checkable foundations**.
+As machine-learning research grows, trustworthy AI assistance for theoretical work requires **machine-checkable foundations**.
 
 ![center width:600px NeurIPS submissions and decisions by year](../pics/NeurIPSStatistics202607PaperCopilot.png)
 
-<small>Source: [Paper Copilot, “NeurIPS Statistics”](https://papercopilot.com/statistics/neurips-statistics/).</small>
+<small>Source: [Paper Copilot, “NeurIPS Statistics” as of July 2026](https://papercopilot.com/statistics/neurips-statistics/).</small>
 
 ---
 
@@ -48,9 +47,9 @@ work requires **machine-checkable foundations**.
 
 - We receive a **finite** training data $S=(z_1,\ldots,z_n)$ from an unknown distribution $\mu$.
 - A learning algorithm $A$ selects **hypothesis** $\widehat f=A(S)$ from a function class $\mathcal F$.
-- What we really want to know is its performance on unseen data $Z\sim\mu$,
+- What we really want to know is its **generalization performance** on **test data** $Z\sim\mu$,
   rather than its performance on the training sample $S$.
-- Because this performance is not directly observable, a **generalization error bound** provides a probabilistic guarantee from the finite sample.
+- But this is not directly observable, we refer to a **generalization error bound** as a probabilistic guarantee from the finite sample.
 
 ![center width:600px Generalization from training data to unseen data](../pics/hankagosa-yoko-manu.png)
 
@@ -70,134 +69,97 @@ work requires **machine-checkable foundations**.
 
 ---
 
-## Empirical risk and expected risk
+## Generalization gap and excess risk arise together
 
-Throughout this talk, a **predictor** $g$ maps an input to a prediction, whereas a
-**hypothesis** is the real-valued loss function $f:\mathcal Z\to\mathbb R$ analyzed
-by the generalization bounds. Thus, given a predictor $g$ and a loss $\ell$, the
-corresponding hypothesis is $f(x,y)=\ell(g(x),y)$.
-
-Then, put
-
+Let **hypothesis** $f(x,y)=\ell(g(x),y)$ denote **predictor** $g$ followed by **loss function** $\ell$. Define the **empirical risk** and **population risk** as below.
 $$
-\widehat L_S(f)
-:=\frac1n\sum_{k=1}^n f(z_k),
+\widehat L_S(f):=\frac1n\sum_{k=1}^n f(z_k),
 \qquad
-L(f)
-:=\mathbb E_{Z\sim\mu}[f(Z)].
+L(f):=\mathbb E[f(Z)].
 $$
 
-- $\widehat L_S(f)$: empirical risk (training error), computable from the training data.
-- $L(f)$: expected risk (test error), an expectation over the unknown distribution.
-- The difference $\left|\widehat L_S(f)-L(f)\right|$ is the generalization gap.
+While **training error** $\widehat L_S(\widehat f)$ is observable, we want to know **test error** $L(\widehat f)$.
+
+If $\widehat f$ is an $\eta$-approximate empiricak risk minimizer (ERM) and $f^\star$ is any comparator, then
+
+$$
+\begin{aligned}
+\underbrace{L(\widehat f)-L(f^\star)}_{\text{excess risk}}
+=
+\underbrace{L(\widehat f)-\widehat L_S(\widehat f)}
+_{\text{generalization gap at $\widehat f$}}
++
+\underbrace{\widehat L_S(\widehat f)-\widehat L_S(f^\star)}
+_{\text{optimization error }\le\eta}
++
+\underbrace{\widehat L_S(f^\star)-L(f^\star)}
+_{\text{generalization gap at $f^\star$}}.
+\end{aligned}
+$$
+
+Thus, **excess risk** is controlled once the **uniform deviation** $\sup_{f \in \mathcal F} |\widehat L_S(f) - L(f) |$ is controlled. We therefore use uniform deviation as the main object in this talk.
 
 ---
 
-## Uniformly bounding the generalization gap
+## Uniform deviation handles a data-dependent hypothesis
 
-At each **fixed** point $f \in \mathcal F$, the generalization gap shrinks
-$$
-\left|\widehat L_S(f) - L(f)\right| \xrightarrow[]{p} 0 \quad \text{as} \quad |S| \to \infty
-$$
-as a consequence of the (pointwise) law-of-large-numbers (LLN).
+<!-- For a fixed $f$, the law of large numbers controls its generalization gap.
+It cannot be applied directly to $\widehat f=A(S)$, which depends on the sample.
+Instead, define -->
+Define the **uniform deviation**
 
-In general, it **does not** hold for the learned hypothesis $\widehat f=A(S)$ because it **statistically depends** on the sample $S$.
-<!-- a probability bound for each fixed $f$ cannot be applied directly to $\widehat f$. -->
-
-Instead, we control the **uniform deviation**:
 $$
-\Delta_n(S)
-:=
+\Delta_n(S):=
 \sup_{f\in\mathcal F}
 \left|\widehat L_S(f)-L(f)\right|.
 $$
-Once the uniform deviation $\Delta_n(S)$ is bounded, we can say
+
+The decomposition on the previous slide immediately gives
+
 $$
-\left|\widehat L_S(\widehat f)-L(\widehat f)\right|
-\le \Delta_n(S)
-$$
-<!-- also holds for a model selected after observing the sample. -->
-
----
-
-## From uniform deviation to a learning guarantee
-
-> **Theorem (oracle inequality for approximate ERM)**
-> 
-> Suppose that $\widehat f$ is an $\eta$-approximate empirical risk minimizer (ERM), that is,
-> 
-> $$
-> \widehat L_S(\widehat f)
-> \le \widehat L_S(f)+\eta
-> \qquad(\forall f\in\mathcal F).
-> $$
->
-> Then, for every comparator $f^\star\in\mathcal F$,
->
-> $$
-> L(\widehat f)-L(f^\star)
-> \le 2\Delta_n(S)+\eta.
-> $$
-
-Indeed,
-$$
-L(\widehat f)
-\le \widehat L_S(\widehat f)+\Delta_n(S)
-\le \widehat L_S(f^\star)+\eta+\Delta_n(S)
-\le L(f^\star)+2\Delta_n(S)+\eta.
+L(\widehat f)-L(f^\star)\le 2\Delta_n(S)+\eta.
 $$
 
-If an exact minimizer of the expected risk exists, we may choose $f^\star\in\operatorname*{argmin}_{f\in\mathcal F}L(f)$.
-But the Lean theorem likewise does not assume that $f^\star$ is a minimizer.
-
-Thus, a Rademacher bound on $\Delta_n(S)$ immediately becomes an excess-risk
-guarantee for approximate ERM; $\eta$ records the optimization error.
-
----
-
-## Lean: expected, empirical, and excess risk
+The same objects are represented directly in Lean:
 
 ```lean
-def populationRisk
-    [MeasurableSpace Ω] (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (h : H) : ℝ :=
-  ∫ ω, ℓ h (Z ω) ∂μ
-
-def empiricalRisk
-    (n : ℕ) (ℓ : H → 𝒵 → ℝ) (S : Fin n → 𝒵) (h : H) : ℝ :=
-  (n : ℝ)⁻¹ * ∑ k : Fin n, ℓ h (S k)
-
-def excessRisk
-    [MeasurableSpace Ω] (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (h hstar : H) : ℝ :=
-  populationRisk ℓ μ Z h - populationRisk ℓ μ Z hstar
-
 def riskDeviation
-    [MeasurableSpace Ω] (n : ℕ) (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (S : Fin n → 𝒵) (h : H) : ℝ :=
+    [MeasurableSpace Ω]
+    (n : ℕ) (ℓ : H → 𝒵 → ℝ) (μ : Measure Ω) (Z : Ω → 𝒵) (S : Fin n → 𝒵) (h : H) : ℝ :=
   |empiricalRisk n ℓ S h - populationRisk ℓ μ Z h|
-```
 
-These definitions correspond to $L(f)$, $\widehat L_S(f)$, and $L(\widehat f)-L(f^\star)$, respectively.
+def uniformDeviation
+    (n : ℕ) (f : H → 𝒵 → ℝ) (μ : Measure Ω)
+    (Z : Ω → 𝒵) (S : Fin n → 𝒵) : ℝ :=
+  ⨆ h, |(n : ℝ)⁻¹ * ∑ k : Fin n, f h (S k) -
+    μ[fun ω' ↦ f h (Z ω')]|
+```
 
 ---
 
-## Lean: approximate ERM and the oracle inequality
+## The oracle inequality in Lean mirrors the decomposition
+
+Mathematically, approximate ERM means
+$\widehat L_S(\widehat f)\le\widehat L_S(f)+\eta$ for every $f\in\mathcal F$.
 
 ```lean
 def IsApproxERM
-    (η : ℝ) (n : ℕ) (ℓ : H → 𝒵 → ℝ) (S : Fin n → 𝒵) (hhat : H) : Prop :=
+    (η : ℝ) (n : ℕ) (ℓ : H → 𝒵 → ℝ)
+    (S : Fin n → 𝒵) (hhat : H) : Prop :=
   ∀ h, empiricalRisk n ℓ S hhat ≤
     empiricalRisk n ℓ S h + η
 
 theorem IsApproxERM.excessRisk_le_two_mul_uniformDeviation
-    {ℓ : H → 𝒵 → ℝ} {Z : Ω → 𝒵} {S : Fin n → 𝒵}
     {hhat hstar : H} {η : ℝ}
     (hERM : IsApproxERM η n ℓ S hhat)
-    (hbounded : BddAbove (Set.range fun h ↦ riskDeviation n ℓ μ Z S h)) :
+    (hbounded : BddAbove
+      (Set.range fun h ↦ riskDeviation n ℓ μ Z S h)) :
     excessRisk ℓ μ Z hhat hstar ≤
       2 * uniformDeviation n ℓ μ Z S + η
 ```
 
-The mathematical hypotheses $\widehat f,f^\star\in\mathcal F$ are represented in Lean 
-by the indices `hhat hstar : H` and the evaluation map `ℓ : H → 𝒵 → ℝ`.
+Here `hhat hstar : H` represent $\widehat f,f^\star\in\mathcal F$.
+No population-risk minimizer is required; any comparator can be used.
 
 ---
 
@@ -264,6 +226,9 @@ $$
 
 ## Lean: Rademacher complexities and uniform deviation
 
+The mathematical objects
+$\widehat{\mathfrak R}_n$, $\mathfrak R_n$, and $\Delta_n$
+are kept together in the same Lean API:
 
 ```lean
 def Signs (n : ℕ) : Type := Fin n → ({-1, 1} : Finset ℤ)
@@ -332,6 +297,11 @@ $$\Delta_n(S)<2\mathfrak R_n(\mathcal F)+\varepsilon,
 
 ## Lean: the main theorem for a separable class
 
+The tail bound
+$\Pr\{\Delta_n\ge2\mathfrak R_n+\varepsilon\}
+\le\exp(-n\varepsilon^2/(2b^2))$
+is stated directly as:
+
 ```lean
 theorem uniform_deviation_tail_bound_separable_of_pos
     [MeasurableSpace 𝒳] [Nonempty 𝒳] [Nonempty H]
@@ -385,6 +355,9 @@ for the supremum.
 ---
 
 ## Lean: from symmetrization to the expectation bound
+
+This is the Lean endpoint of the preceding calculation
+$\mathbb E[\Delta_n]\le2\mathfrak R_n$:
 
 ```lean
 theorem
@@ -443,6 +416,10 @@ Combining this concentration bound with the expectation bound proves the main th
 ---
 
 ## Lean: the bounded-difference property of uniform deviation
+
+The mathematical sensitivity estimate
+$|\Delta_n(S)-\Delta_n(S^{(k)})|\le2b/n$
+uses `Function.update` in Lean:
 
 ```lean
 theorem uniformDeviation_bounded_difference
@@ -504,12 +481,11 @@ $h\mapsto F(h,x)$ for each $x$ implies the required continuity of $g$.
 
 ---
 
-## Lean: `denseSeq` and restriction to a countable dense subset
+## Lean: moving the supremum to `denseSeq`
 
-`denseSeq : ℕ → H` is a sequence fixed by Mathlib using the axiom of choice.
-Every nonempty open subset of `H` contains a term of this sequence.
-It is a proof device for reducing an uncountable supremum to a countable one,
-not a computational procedure.
+The mathematical equality
+$\sup_{h\in H}g(h)=\sup_{m\in\mathbb N}g(h_m)$
+becomes a reusable Lean lemma:
 
 ```lean
 def denseSeq
@@ -519,16 +495,7 @@ def denseSeq
 theorem denseRange_denseSeq
     [TopologicalSpace H] [SeparableSpace H] [Nonempty H] :
     DenseRange (denseSeq H)
-```
 
-`denseSeq H` selects a countable dense subset of the separable space `H`.
-`DenseRange` states that every nonempty open set contains a term of the sequence.
-
----
-
-## Lean: moving the supremum to a dense sequence
-
-```lean
 noncomputable abbrev denseRestriction
     [TopologicalSpace H] [SeparableSpace H] [Nonempty H]
     (F : H → α) : ℕ → α :=
@@ -540,9 +507,9 @@ theorem separableSpaceSup_eq_real
     ⨆ h : H, g h = ⨆ m : ℕ, g (denseSeq H m)
 ```
 
-As the type shows, equality of the suprema requires `Continuous g`.
-This lemma proves that empirical complexity, expected complexity, and uniform
-deviation are unchanged by restriction to the dense sequence.
+`denseSeq` is a proof device, not a computational procedure. Continuity then
+shows that empirical complexity, expected complexity, and uniform deviation
+are unchanged by the restriction.
 
 ---
 
@@ -580,6 +547,10 @@ probabilistic part.
 ---
 
 ## Lean: the basic theorem accepting a sample-dependent bound
+
+The theorem below packages the implication
+$\widehat{\mathfrak R}_n(\mathcal F;S)\le C(S)
+\Longrightarrow \Delta_n(S)\lesssim2C(S)+O(n^{-1/2})$.
 
 ```lean
 theorem
@@ -649,23 +620,11 @@ We first prove the theorem for a general Hilbert space and obtain the finite-dim
 
 ---
 
-## Lean: implementation of the $\ell_2$ linear predictor
-
-```lean
-noncomputable def linearPredictorL2
-    {d : ℕ} {W X : ℝ}
-    (w : Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) W)
-    (x : Metric.closedBall (0 : EuclideanSpace ℝ (Fin d)) X) : ℝ :=
-  @inner ℝ _ _
-    (w : EuclideanSpace ℝ (Fin d))
-    (x : EuclideanSpace ℝ (Fin d))
-```
-
-Weights and inputs are subtypes of closed balls, while the implementation itself is simply the inner product.
-
----
-
 ## Lean: the fixed-sample $\ell_2$ bound
+
+In Lean, weights and inputs are closed-ball subtypes and `linearPredictorL2`
+is their inner product. The displayed theorem is exactly the samplewise bound
+$\widehat{\mathfrak R}_n(\mathcal F;S)\le C(S)$ from the previous slide.
 
 ```lean
 theorem linear_predictor_l2_empirical_bound_of_sample
@@ -712,6 +671,9 @@ the observed sample norms are small.
 ---
 
 ## Lean: the end-to-end $\ell_2$ theorem
+
+This statement substitutes the sample norm bound $C(S)$ directly into the
+general theorem, so the mathematical right-hand side appears unchanged in Lean.
 
 ```lean
 theorem
@@ -883,17 +845,22 @@ def supervisedLossClass
 
 ---
 
-## From the loss class to excess risk
+## The same decomposition yields excess risk for learning
+
+For the loss class, the generalization theorem first gives
+$\Delta_n(S)\le 2C(S)+3b\sqrt{2\log(2/\delta)/n}$.
+Returning to the decomposition from the first section,
 
 > **Theorem (excess-risk bound for approximate ERM)**
 >
-> Combining the basic generalization theorem with the oracle
-> inequality, with probability at least $1-\delta$,
+> with probability at least $1-\delta$,
 >
 > $$
-> L(\widehat f)-L(f^\star)
+> \underbrace{L(\widehat f)-L(f^\star)}_{\text{excess risk}}
 > \le
-> 4C(S)
+> 2\underbrace{\Delta_n(S)}_{\text{uniform control of both generalization gaps}}
+> +\eta
+> \le 4C(S)
 > +6b\sqrt{\frac{2\log(2/\delta)}{n}}
 > +\eta.
 > $$
@@ -984,7 +951,7 @@ on Lean + Mathlib.
 
 ## Summary
 
-1. A learned model depends on the training data, so its generalization is controlled through a uniform deviation.
+1. Excess risk decomposes into two generalization gaps and optimization error; uniform deviation controls both gaps at once.
 2. Rademacher complexity measures how well a function class can fit noise on a sample.
 3. Symmetrization and McDiarmid's inequality turn complexity bounds into high-probability generalization bounds.
 4. In Lean, a countable dense subclass resolves measurability of the

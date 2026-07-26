@@ -1,0 +1,76 @@
+                    B Proof of the Bias–Variance Decomposition
+                    We prove a slightly more general version of Theorem 1. In this appendix, the abstract class is denoted by
+                    Habs rather than Hk, because the argument does not use the state-transition representation H ◦ B(k,F).
+                    The specialization H       =H gives the theorem in the main text.
+                                            abs     k
+                    Theorem 4 (General bias–variance decomposition). Let Habs be a separable class of measurable functions
+                    X →R, let C be a nonempty class of measurable benchmark functions X → R, and let ℓ : R×Y → [0,b] be
+                    measurable and βℓ-Lipschitz in its first argument. Define
+                                                                                               n
+                                                                                  ˆ         1 Xℓ(f(X ),Y ),
+                                                   L[f] := E[ℓ(f(X),Y)],          L[f] := n              i    i
+                                                                                              i=1
+                    and set
+                                           L := inf L[c],         L      := inf L[f],          ε       := L      −L .
+                                             C                     H                            model       H         C
+                                                   c∈C               abs    f∈H                               abs
+                                                                                 abs
+                    Let Φembed : Habs → Himp be a realization map into an implementation class and let dT be a pseudo-metric
+                    on H     ∪H . Assume that
+                          abs     imp
+                                                            ε     := sup d (Φ            (f),f) < ∞
+                                                              imp             T    embed
+                                                                      f∈H
+                                                                          abs
+                    and that, for every f ∈ H       ,
+                                                 abs
+                                                        |L[Φ       (f)] − L[f]| ≤ β d (Φ           (f),f),
+                                                             embed                   L T     embed
+                                                         ˆ                 ˆ
+                                                        |L[Φ       (f)] − L[f]| ≤ βˆd (Φ           (f),f).
+                                                             embed                   L T     embed
+                                     ˆ
+                    For η ≥ 0, let f ∈ Habs be an η-empirical minimizer:
+                                                                     ˆ ˆ             ˆ
+                                                                    L[f] ≤     inf  L[f]+η,
+                                                                             f∈H
+                                                                                 abs
+                                 ˆ              ˆ                                                                                  n
+                    and output h := Φ          (f). Then, for every δ ∈ (0,1), with probability at least 1 − δ over D ∼ P ,
+                                         embed
+                                               ˆ                                         ˆ                 rlog(1/δ)
+                                             L[h]−L ≤β ε            +ε        +η+4β R (H )+Cb                          ,                    (8)
+                                                      C      L imp      model           ℓ  S    abs r            n
+                                              ˆ    ˆ ˆ                             ˆ                   log(1/δ)
+                                           L[h]−L[h] ≤ (β +βˆ)ε             +2β R (H )+Cb                        ,                          (9)
+                                                              L     L imp         ℓ  S    abs              n
+                                                                                           ˆ
+                    where C is a universal constant. The same bounds hold with R (H                 ) replaced by R (H        ).
+                                                                                            S    abs                  n    abs
+                    Proof. No topological structure is needed on C. Since the loss is bounded and nonnegative, L[c] ∈ [0,b] for
+                    every c ∈ C, so L = inf        L[c] is a well-defined real number whenever C is nonempty.
+                                       C       c∈C
+                    Theonly probabilistic ingredient is the standard uniform deviation bound for bounded Lipschitz loss classes.
+                    Since H      is separable, the relevant suprema are measurable, and symmetrization, bounded differences, and
+                             abs
+                    the contraction inequality imply that, with probability at least 1 − δ,             r
+                                                                          ˆ            ˆ                   log(1/δ)
+                                              ∆      := sup |L[f]−L[f]| ≤ 2β R (H               ) +Cb               .                      (10)
+                                                H                                    ℓ  S    abs
+                                                  abs                                                          n
+                                                         f∈H
+                                                             abs
+                    The population Rademacher version follows from the same argument after taking expectation over S.
+                    Onthe event (10), the implementation error is controlled directly by the assumptions:
+                                                        ˆ        ˆ                   ˆ ˆ     ˆ ˆ
+                                                      L[h]−L[f] ≤ β ε         ,     L[f]−L[h] ≤ βˆε          .
+                                                                       L imp                          L imp
+                    For the excess risk, no compactness or exact population minimizer is needed. Using only the infimum L
+                                                ˆ                                                                                          Habs
+                    and the η-minimality of f,
+                                             ˆ                 ˆ    ˆ ˆ     ˆ ˆ             ˆ              ˆ
+                                         L[f]−L          ≤L[f]−L[f]+L[f]− inf L[f]+ inf L[f]−L
+                                                   H                                                                 H
+                                                     abs                            f∈H            f∈H                 abs
+                                                                                        abs             abs
+                                                                                14
