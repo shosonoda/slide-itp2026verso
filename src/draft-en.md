@@ -39,6 +39,21 @@ As machine-learning research grows, trustworthy AI assistance for theoretical wo
 
 <small>Source: [Paper Copilot, “NeurIPS Statistics” as of July 2026](https://papercopilot.com/statistics/neurips-statistics/).</small>
 
+
+---
+
+## What this study formalizes
+
+- the basic generalization bound using Rademacher complexity,
+- applications to regularized linear models,
+- an extension via Dudley's entropy integral.
+
+---
+
+<!-- _class: title -->
+
+# How to control generalization performance
+
 ---
 
 ## General formulation of statistical machine learning:
@@ -53,19 +68,6 @@ As machine-learning research grows, trustworthy AI assistance for theoretical wo
 
 ![center width:600px Generalization from training data to unseen data](../pics/hankagosa-yoko-manu.png)
 
----
-
-## What this study formalizes
-
-- the basic generalization bound using Rademacher complexity,
-- applications to regularized linear models,
-- an extension via Dudley's entropy integral.
-
----
-
-<!-- _class: title -->
-
-# What controls generalization performance
 
 ---
 
