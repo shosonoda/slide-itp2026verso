@@ -1007,22 +1007,22 @@ left implicit in informal mathematics. --> -->
 - **Affeldt et al. (2025)**:
   measure-theoretic concentration inequalities in Rocq.
 
-For real-valued infinite function classes, our work connects product measures,
+<!-- For real-valued infinite function classes, our work connects product measures,
 uncountable suprema, symmetrization, and Dudley's bound in a single development
-on Lean + Mathlib.
+on Lean + Mathlib. -->
 
 ---
 
 ## Related work: the current Lean machine-learning ecosystem
 
-### Statistical Learning Theory in Lean 4
+**Statistical Learning Theory in Lean 4**
 
 - An independent large-scale library by Zhang, Lee, and Liu.
 - It covers Gaussian concentration, Dudley's bound, localized least squares, and related topics.
 - It reuses the `lean-rademacher` argument that restricts a supremum over a separable space to a countable dense sequence.
 - https://github.com/YuanheZ/lean-stat-learning-theory
 
-### Lean Machine Learning
+**Lean Machine Learning**
 
 - A curated Mathlib-based library sharing definitions and theorems for machine-learning theory.
 - It develops common vocabulary for algorithms, metrics, probability, and optimization.
